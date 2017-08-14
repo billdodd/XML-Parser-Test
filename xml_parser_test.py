@@ -1,9 +1,9 @@
 import argparse
 from bs4 import BeautifulSoup
-# from bs4.diagnose import diagnose
-# import bs4
+from bs4.diagnose import diagnose
+import requests
 
-doc = """
+default_doc = """
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Copyright 2014-2016 Distributed Management Task Force, Inc. (DMTF). All rights reserved.-->
 <edmx:Edmx xmlns:edmx="http://docs.oasis-open.org/odata/ns/edmx" Version="4.0">
@@ -19,17 +19,43 @@ doc = """
 valid_parsers = ['html.parser', 'lxml', 'lxml-xml', 'xml', 'html5lib']
 
 arg_parser = argparse.ArgumentParser(description='Tool to test various parsers')
+arg_parser.add_argument('--diagnose', action='store_true', help='dump the results of beautiful4 diagnose() function')
+arg_parser.add_argument('-d', '--document', help='document file name to open')
 arg_parser.add_argument('-p', '--parser', help='name of parser to use - valid values are {}'.format(valid_parsers))
-#                                           + '"html.parser", "lxml", "lxml-xml", "xml", "html5lib"')
+arg_parser.add_argument('-u', '--url', help='document URL to open')
 
 args = arg_parser.parse_args()
 
+bs4_diagnose = args.diagnose
+doc_file = args.document
 parser = args.parser
+url = args.url
 
 if parser is not None and parser not in valid_parsers:
     print('Parser "{}" is not a recognized parser.'.format(parser))
     print('Please specify a valid parser from the list: {}'.format(valid_parsers))
     exit(1)
+
+doc = default_doc
+if doc_file is not None and url is not None:
+    print('Only specify the document to parse via one of the following options: --document or --url')
+    exit(1)
+elif doc_file is not None:
+    # TODO: add exception handling
+    doc = open(doc_file)
+elif url is not None:
+    # TODO: add exception handling and better response checking
+    r = requests.get(url)
+    if r.status_code == requests.codes.ok:
+        doc = r.text
+    else:
+        print('Request to get doc at URL {} did not return expected OK status code; using default doc instead')
+
+if bs4_diagnose:
+    print('Option "--diagnose" option specified; running document through bs4 diagnose() function')
+    print()
+    diagnose(doc)
+    exit(0)
 
 if parser is None:
     print('No parser specified; using default parser')
