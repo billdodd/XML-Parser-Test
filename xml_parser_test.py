@@ -139,7 +139,7 @@ def main():
         doc = open(doc_file)
     elif url is not None:
         # TODO: add exception handling and better response checking
-        r = requests.get(url)
+        r = requests.get(url, verify=False)
         if r.status_code == requests.codes.ok:
             doc = StringIO(r.text)
         else:
