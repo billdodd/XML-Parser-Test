@@ -22,7 +22,30 @@ default_doc = """<?xml version="1.0" encoding="UTF-8"?>
 
 
 def exercise_soup(soup):
+    """
+    Sandbox function to test out walking and searching XML document
+    :param soup: BS4 soup instance to navigate
+    :return:
+    """
     # try to get the expected Redfish schema root tag 'Edmx' (or 'edmx:edmx' if using HTML parser)
+    print()
+    # print all tags found
+    expected_tags = ['Edmx', 'Reference', 'Include', 'DataServices', 'Schema', 'EntityContainer']
+    print('All tags seen in document:')
+    tag_list = list()
+    for tag in soup.find_all(True):
+        if tag.name not in tag_list:
+            tag_list.append(tag.name)
+    bad_tags = list()
+    for tag in tag_list:
+        print('    ' + tag)
+        if tag not in expected_tags:
+            bad_tags.append(tag)
+    if len(bad_tags) > 0:
+        print()
+        print('The following tags were found that may be misspelled or the wrong case:')
+        for tag in bad_tags:
+            print('    ' + tag)
     print()
     if soup.is_xml:
         tag = soup.Edmx
