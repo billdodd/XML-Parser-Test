@@ -140,7 +140,7 @@ def main():
     group1 = arg_parser.add_mutually_exclusive_group(required=True)
     group1.add_argument('--diagnose', action='store_true',
                         help='dump the results of the beautiful4 diagnose() function')
-    group1.add_argument('--bs4', help='parse with specified BeautifulSoup4 parser;valid values are {}'
+    group1.add_argument('--bs4', help='parse with specified BeautifulSoup4 parser; list of valid parsers: {}'
                         .format(valid_parsers))
     group1.add_argument('--etree', action='store_true', help='parse with ElementTree parser')
     group2 = arg_parser.add_mutually_exclusive_group()
