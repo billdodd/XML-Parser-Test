@@ -1,4 +1,5 @@
-# local dir with xml files to test with
+# local dirs with xml files to test with
+metadata/
 xml/
 
 # Byte-compiled / optimized / DLL files

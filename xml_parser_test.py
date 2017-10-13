@@ -20,6 +20,14 @@ default_doc = """<?xml version="1.0" encoding="UTF-8"?>
 </edmx:Edmx>
 """
 
+EDM_NAMESPACE = "http://docs.oasis-open.org/odata/ns/edm"
+EDMX_NAMESPACE = "http://docs.oasis-open.org/odata/ns/edmx"
+
+EDM_TAGS = ['Action', 'Annotation', 'Collection', 'ComplexType', 'EntityContainer', 'EntityType', 'EnumType', 'Key',
+            'Member', 'NavigationProperty', 'Parameter', 'Property', 'PropertyRef', 'PropertyValue', 'Record',
+            'Schema', 'Singleton', 'Term', 'TypeDefinition']
+EDMX_TAGS = ['DataServices', 'Edmx', 'Include', 'Reference']
+
 
 def exercise_soup(soup):
     """
@@ -27,26 +35,7 @@ def exercise_soup(soup):
     :param soup: BS4 soup instance to navigate
     :return:
     """
-    # try to get the expected Redfish schema root tag 'Edmx' (or 'edmx:edmx' if using HTML parser)
-    print()
-    # print all tags found
-    expected_tags = ['Edmx', 'Reference', 'Include', 'DataServices', 'Schema', 'EntityContainer']
-    print('All tags seen in document:')
-    tag_list = list()
-    for tag in soup.find_all(True):
-        if tag.name not in tag_list:
-            tag_list.append(tag.name)
-    bad_tags = list()
-    for tag in tag_list:
-        print('    ' + tag)
-        if tag not in expected_tags:
-            bad_tags.append(tag)
-    if len(bad_tags) > 0:
-        print()
-        print('The following tags were found that may be misspelled or the wrong case:')
-        for tag in bad_tags:
-            print('    ' + tag)
-    print()
+
     if soup.is_xml:
         tag = soup.Edmx
         if tag is not None:
@@ -126,6 +115,37 @@ def et_parse(doc):
         print('Error parsing document with ElementTree, error: {}'.format(e))
 
 
+def bad_edm_tags(tag):
+    return tag.namespace == EDM_NAMESPACE and tag.name not in EDM_TAGS
+
+
+def bad_edmx_tags(tag):
+    return tag.namespace == EDMX_NAMESPACE and tag.name not in EDMX_TAGS
+
+
+def other_ns_tags(tag):
+    return tag.namespace != EDM_NAMESPACE and tag.namespace != EDMX_NAMESPACE
+
+
+def check_edmx(doc, bs4_parser):
+    try:
+        soup = BeautifulSoup(doc, bs4_parser)
+        # print('Bad edm tags:')
+        for tag in soup.find_all(bad_edm_tags):
+            print('{}:{} (ns={})'.format(tag.prefix, tag.name, tag.namespace))
+        # print()
+        # print('Bad edmx tags:')
+        for tag in soup.find_all(bad_edmx_tags):
+            print('{}:{} (ns={})'.format(tag.prefix, tag.name, tag.namespace))
+        # print()
+        # print('Tags not in edm or edmx namespace:')
+        for tag in soup.find_all(other_ns_tags):
+            print('{}:{} (ns={})'.format(tag.prefix, tag.name, tag.namespace))
+        # print()
+    except Exception as e:
+        print('Error parsing document with BeautifulSoup4, error: {}'.format(e))
+
+
 def main():
     # For BeautifulSoup4:
     #     XML parsers: xml, lxml-xml
@@ -143,6 +163,7 @@ def main():
     group1.add_argument('--bs4', help='parse with specified BeautifulSoup4 parser; list of valid parsers: {}'
                         .format(valid_parsers))
     group1.add_argument('--etree', action='store_true', help='parse with ElementTree parser')
+    group1.add_argument('--edmx', action='store_true', help='use bs4 xml parser and check for valid edm/edmx tags')
     group2 = arg_parser.add_mutually_exclusive_group()
     group2.add_argument('-d', '--document', help='file name of document to parse')
     group2.add_argument('-u', '--url', help='URL of document to parse')
@@ -153,6 +174,7 @@ def main():
     doc_file = args.document
     bs4_parser = args.bs4
     use_etree = args.etree
+    edmx_check = args.edmx
     url = args.url
 
     # Get the doc to parse as a file object
@@ -173,6 +195,8 @@ def main():
         doc = StringIO(default_doc)
 
     # Do the parsing
+    if edmx_check:
+        check_edmx(doc, 'xml')
     if bs4_diagnose:
         run_bs4_diagnose(doc)
     elif bs4_parser is not None:
