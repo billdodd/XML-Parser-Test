@@ -7,6 +7,13 @@ import requests
 import sys
 from xml.etree import ElementTree
 
+EDM_NAMESPACE = "http://docs.oasis-open.org/odata/ns/edm"
+EDMX_NAMESPACE = "http://docs.oasis-open.org/odata/ns/edmx"
+
+EDM_TAGS = ['Action', 'Annotation', 'Collection', 'ComplexType', 'EntityContainer', 'EntityType', 'EnumType', 'Key',
+            'Member', 'NavigationProperty', 'Parameter', 'Property', 'PropertyRef', 'PropertyValue', 'Record',
+            'Schema', 'Singleton', 'Term', 'TypeDefinition']
+EDMX_TAGS = ['DataServices', 'Edmx', 'Include', 'Reference']
 
 default_doc = """<?xml version="1.0" encoding="UTF-8"?>
 <!-- Copyright 2014-2016 Distributed Management Task Force, Inc. (DMTF). All rights reserved.-->
@@ -19,14 +26,6 @@ default_doc = """<?xml version="1.0" encoding="UTF-8"?>
     </edmx:Reference>
 </edmx:Edmx>
 """
-
-EDM_NAMESPACE = "http://docs.oasis-open.org/odata/ns/edm"
-EDMX_NAMESPACE = "http://docs.oasis-open.org/odata/ns/edmx"
-
-EDM_TAGS = ['Action', 'Annotation', 'Collection', 'ComplexType', 'EntityContainer', 'EntityType', 'EnumType', 'Key',
-            'Member', 'NavigationProperty', 'Parameter', 'Property', 'PropertyRef', 'PropertyValue', 'Record',
-            'Schema', 'Singleton', 'Term', 'TypeDefinition']
-EDMX_TAGS = ['DataServices', 'Edmx', 'Include', 'Reference']
 
 
 def exercise_soup(soup):
@@ -130,18 +129,27 @@ def other_ns_tags(tag):
 def check_edmx(doc, bs4_parser):
     try:
         soup = BeautifulSoup(doc, bs4_parser)
-        # print('Bad edm tags:')
+        print('Bad edm tags:')
         for tag in soup.find_all(bad_edm_tags):
-            print('{}:{} (ns={})'.format(tag.prefix, tag.name, tag.namespace))
-        # print()
-        # print('Bad edmx tags:')
+            if tag.prefix is None:
+                print('{} (ns={})'.format(tag.name, tag.namespace))
+            else:
+                print('{}:{} (ns={})'.format(tag.prefix, tag.name, tag.namespace))
+        print()
+        print('Bad edmx tags:')
         for tag in soup.find_all(bad_edmx_tags):
-            print('{}:{} (ns={})'.format(tag.prefix, tag.name, tag.namespace))
-        # print()
-        # print('Tags not in edm or edmx namespace:')
+            if tag.prefix is None:
+                print('{} (ns={})'.format(tag.name, tag.namespace))
+            else:
+                print('{}:{} (ns={})'.format(tag.prefix, tag.name, tag.namespace))
+        print()
+        print('Tags not in edm or edmx namespaces:')
         for tag in soup.find_all(other_ns_tags):
-            print('{}:{} (ns={})'.format(tag.prefix, tag.name, tag.namespace))
-        # print()
+            if tag.prefix is None:
+                print('{} (ns={})'.format(tag.name, tag.namespace))
+            else:
+                print('{}:{} (ns={})'.format(tag.prefix, tag.name, tag.namespace))
+        print()
     except Exception as e:
         print('Error parsing document with BeautifulSoup4, error: {}'.format(e))
 
@@ -163,7 +171,7 @@ def main():
     group1.add_argument('--bs4', help='parse with specified BeautifulSoup4 parser; list of valid parsers: {}'
                         .format(valid_parsers))
     group1.add_argument('--etree', action='store_true', help='parse with ElementTree parser')
-    group1.add_argument('--edmx', action='store_true', help='use bs4 xml parser and check for valid edm/edmx tags')
+    group1.add_argument('--edmx', action='store_true', help='use BS4 xml parser and check for valid edm/edmx tags')
     group2 = arg_parser.add_mutually_exclusive_group()
     group2.add_argument('-d', '--document', help='file name of document to parse')
     group2.add_argument('-u', '--url', help='URL of document to parse')

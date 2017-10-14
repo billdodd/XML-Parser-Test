@@ -15,7 +15,7 @@ pip install lxml
 
 ### Syntax
 ```
-usage: xml_parser_test.py [-h] (--diagnose | --bs4 BS4 | --etree)
+usage: xml_parser_test.py [-h] (--diagnose | --bs4 BS4 | --etree | --edmx)
                           [-d DOCUMENT | -u URL]
 
 Tool to test various parsers
@@ -27,12 +27,15 @@ optional arguments:
                         valid parsers: ['html.parser', 'lxml', 'lxml-xml',
                         'xml', 'html5lib']
   --etree               parse with ElementTree parser
+  --edmx                use BS4 xml parser and check for valid edm/edmx tags
   -d DOCUMENT, --document DOCUMENT
                         file name of document to parse
   -u URL, --url URL     URL of document to parse
 ```
 
-### Example
+### Examples
+Parse document `sample.xml` using BeautifulSoup4 with the 'xml' parser.
+
 ```
 $ python3 xml_parser_test.py -d sample.xml --bs4 xml
 Parsing document with BeautifulSoup4 and parser "xml"
@@ -44,7 +47,7 @@ Parsed document (BeautifulSoup4 xml):
 <edmx:Edmx Version="4.0" xmlns:edmx="http://docs.oasis-open.org/odata/ns/edmx">
  <edmx:Reference Uri="/redfish/v1/Schemas/ServiceRoot_v1.xml">
   <edmx:Include Namespace="ServiceRoot"/>
-  <edmx:Include Namespace="ServiceRoot.v1_0_0"/>
+  <edmx:include Namespace="ServiceRoot.v1_0_0"/>
   <edmx:Include Namespace="ServiceRoot.v1_0_2"/>
  </edmx:Reference>
 </edmx:Edmx>
@@ -52,6 +55,18 @@ Parsed document (BeautifulSoup4 xml):
 is_xml = True
 ```
 
+Parse document `sample.xml` using BeautifulSoup4 with the 'xml' parser and show any tags found that are not valid `edm` or `edmx` tags. Note that there is one bad `edmx` tag in the sample doc (`<edmx:include .../>` with a lowercase 'i').
+
+```
+$ python3 xml_parser_test.py -d sample.xml --edmx
+Bad edm tags:
+
+Bad edmx tags:
+edmx:include (ns=http://docs.oasis-open.org/odata/ns/edmx)
+
+Tags not in edm or edmx namespaces:
+
+```
 
 ## XML Validation
 
@@ -70,6 +85,8 @@ optional arguments:
 ```
 
 ### Example
+Validate document `sample.xml` against the `schemas/edms.xsd` schema. Note that the sample doc does not conform to the schema, so a schema validation error is shown.
+
 ```
 $ python3 xml_validate.py -d sample.xml -s schemas/edmx.xsd
 
