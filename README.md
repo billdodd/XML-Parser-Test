@@ -95,5 +95,6 @@ Schema well-formed, syntax ok.
 XML well-formed, syntax ok.
 
 XML schema validation error in file sample.xml (schema file schemas/edmx.xsd). Error log:
+<string>:7:0:ERROR:SCHEMASV:SCHEMAV_ELEMENT_CONTENT: Element '{http://docs.oasis-open.org/odata/ns/edmx}include': This element is not expected.
 <string>:3:0:ERROR:SCHEMASV:SCHEMAV_ELEMENT_CONTENT: Element '{http://docs.oasis-open.org/odata/ns/edmx}Edmx': Missing child element(s). Expected is one of ( {http://docs.oasis-open.org/odata/ns/edmx}Reference, {http://docs.oasis-open.org/odata/ns/edmx}DataServices ).
 ```
